@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title> Lights Out Game</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+	<style type="text/css">
+		#body {
+			background-image: url("bg.jpg");
+		}
+		.grid-container {
+  			margin-top :  100px;
+  			align-content: center;
+  			text-align: center;
+		}
+
+		.row {
+			margin-top: 40px;
+			margin-left: 200px;
+		}
+		
+		.on-bulb {
+  			background-color: yellow;
+  			height: 80px;
+  			width: 80px;
+ 		 	border: 1px solid rgba(0, 0, 0, 0.8);
+  			padding: 20px;
+		}
+
+		.off-bulb {
+  			background-color: black;
+  			color: white;
+  			height: 80px;
+  			width: 80px;
+ 		 	border: 1px solid rgba(0, 0, 0, 0.8);
+  			padding: 20px;
+		}
+		.grid-container{
+			animation-name: fade;
+			animation-delay: 
+		}
+		#solve{
+			align-content: center;
+  			text-align: center;
+  			align-self: center;
+  			margin-top: 100px;
+  			margin-left: 650px;
+		}
+
+	</style>
+</head>
+
+<body onload="Initialize()" id="body">
+	<h1 style="text-align: center; color: white;"> <strong>Lights Out Puzzle Game </strong> </h1><br/>
+
+	<div>
+		<h2 style="color: white; text-align: center;">Introduction about Game </h2> <br/>
+		<pre style="color: white;">					You can click on any box in this square Grid any number of times and whenever you click on
+						 a box it's color and it's all adjacent boxes' colors will be flipped.
+						 		Your goal is to make all colors yellow
+						 			  in minimum moves.
+		</pre>
+	</div>
+
+
+	<div class="row" >
+		<div class="col-lg-4">
+			<button class="btn btn-success btn btn-lg" onclick="start()" id="timer"> Start Timer </button>
+		</div>
+		<div class="col-lg-4">
+			<button class="btn btn-primary btn btn-lg" id="moves"> Moves : </button>
+		</div>
+		<div class="col-lg-4">
+			<button class="btn btn-danger btn btn-lg" id="min-moves"> Minimum Moves : </button>
+		</div>
+	</div>
+
+
+	<div class="grid-container" id="grid">
+	</div>
+
+	<button class="btn btn-primary btn btn-lg" onclick="solve()" id="solve"> Solve </button>
+	<div>
+		<p></p>
+	</div>
+	<script type="text/javascript">
+		var timerInterval = null;
+  		function changeValue() {
+    		document.getElementById("timer").innerHTML = ++value;
+  		}
+  		function start() {
+    		clearInterval(timerInterval);
+    		value = 0;
+    		timerInterval = setInterval(changeValue, 1000);
+  		}
+
+  		
+	</script>
+
+	<script type="text/javascript">
+
+		var moves =0 ;
+		var n;
+		var done=0;
+		var grid = [];
+		var boxes = [];
+		var ans = [];
+		var minmoves = 0;
+		n = prompt("Enter the size of grid",3);
+		n = parseInt(n);
+
+		function Initialize(){
+
+			for(var i=0;i<n;i++){
+				for(var j=0;j<n;j++){
+					var box = document.createElement("BUTTON");
+					box.id = String(i*n+j);
+					box.innerHTML = i*n+j;
+					grid[i*n+j]=0;
+					boxes[i*n+j]=1;
+					box.onclick = function(){ Game(this);};
+					box.className = "on-bulb";
+					document.getElementById("grid").appendChild(box);
+				}
+				var box = document.createElement("div");
+				document.getElementById("grid").appendChild(box);
+			}
+
+			var count = Math.floor((Math.random()*n))+4;
+			console.log(count);
+
+			while(count--){
+				var id = Math.floor((Math.random()*100))%(n*n);
+				console.log("Selected box : " + id);
+				var element = document.getElementById(String(id));
+				grid[id]++;
+				toggle(element);
+				if(id%n+1 < n){
+					toggle(document.getElementById(String(id+1)));
+				}
+				if(id+n< n*n){
+					toggle(document.getElementById(String(id+n)));
+				}
+				if(id-n >=0){
+					toggle(document.getElementById(String(id-n)));
+				}
+				if(id%n){
+					toggle(document.getElementById(String(id-1)));
+				}
+			}
+			Compute();
+		}
+
+		function Compute(){
+
+			for(var i=0;i<n*n;i++)
+				if(grid[i]%2)
+					minmoves++;
+			document.getElementById("min-moves").innerHTML = "Minimum Moves : " + minmoves;
+
+		} 
+
+		function Game(e){
+				moves++;
+				var flag=1;
+				document.getElementById("moves").innerHTML = "Moves : " + moves;
+				if(done==1)
+					e.innerHTML = e.id;
+				toggle(e);
+				var id = parseInt(e.id);
+				if( (id%n +1) < n)
+					toggle(document.getElementById(String(id+1)));
+				if(id+n < n*n)
+					toggle(document.getElementById(String(id+n)));
+				if(id-n >= 0)
+					toggle(document.getElementById(String(id-n)));
+				if(id%n != 0)
+					toggle(document.getElementById(String(id-1)));
+				for(var i=0;i<n*n;i++)
+					if(boxes[i]==0)
+						flag=0;
+				if(flag==1)
+					alert("Congrats You Win");	
+
+		}
+		
+
+		function toggle(e){
+			var i = parseInt(e.id);
+			boxes[i]^=1;
+			if(e.className == "off-bulb")	
+				e.className = "on-bulb";
+			else
+				e.className = "off-bulb";
+			var id  = "#"+e.id;
+			$(id).fadeOut(500,"linear");
+			$(id).fadeIn(500,"linear");
+		}
+
+		function solve(){
+
+			done=1;
+			for(var i=0;i<(1<<n);i++){
+				console.log(i);
+				var temp = [];
+				var count=0;
+				for(var j=0;j<n*n;j++)
+					{
+						ans[j]=0;
+						temp[j]=boxes[j];
+					}
+
+				for(var j=0;j<n;j++)
+					if( (i & (1<<j)) != 0){
+						temp[j]^=1;
+						ans[j]=1;
+						count++;
+						if(j!=n-1)
+							temp[j+1]^=1;
+						temp[j+n]^=1;
+						if(j!=0)
+							temp[j-1]^=1;
+					}
+
+				for(var j=1;j<n;j++)
+				for(var k=0;k<n;k++){
+					var id = j*n+k;
+					if(temp[id-n] == 0){
+						count++;
+						temp[id]^=1;
+						ans[id]=1;
+						if( (id%n +1) < n)
+							temp[id+1]^=1;	
+						if(id+n < n*n)
+							temp[id+n]^=1;
+						if(id-n >=0)
+							temp[id-n]^=1;
+						if(id%n !=0)
+							temp[id-1]^=1;
+					}
+				}
+
+				var flag=1;
+				for(var j=0;j<n;j++)
+					if(temp[(n-1)*n+j]==0)
+					flag=0;
+				if(flag==1)
+				{
+					for(var j=0;j<n*n;j++)
+						if(ans[j]==1)
+							document.getElementById(String(j)).innerHTML = "Click";	
+						break;
+				}		
+			}
+		}
+
+	</script>
+</body>
+</html>
